@@ -1,26 +1,37 @@
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.util.Base64;
 
 public class AES {
     private static final String AES_ALGORITHM = "AES";
+    private static final String PBKDF_ALGORITHM = "PBKDF2WithHmacSHA256";
+    private static final int PBKDF_ITERATIONS = 10000;
+    private static final int KEY_LENGTH_BITS = 256;
 
-    public static SecretKey getSecretKey(String keyString) {
-        byte[] keyBytes = keyString.getBytes(StandardCharsets.UTF_8);
-        return new SecretKeySpec(keyBytes, AES_ALGORITHM);
+    public static SecretKey generateAESKey(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        SecretKeyFactory factory = SecretKeyFactory.getInstance(PBKDF_ALGORITHM);
+        byte[] salt = generateSalt();
+        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, PBKDF_ITERATIONS, KEY_LENGTH_BITS);
+        SecretKey secretKey = factory.generateSecret(spec);
+        return new SecretKeySpec(secretKey.getEncoded(), AES_ALGORITHM);
     }
 
-    public static SecretKey generateAESKey() throws NoSuchAlgorithmException {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance(AES_ALGORITHM);
-        keyGenerator.init(256); // Set key size (128, 192, or 256)
-        return keyGenerator.generateKey();
+    public static byte[] generateSalt() {
+        // Generate a random salt
+        // You can use a secure random number generator to generate the salt
+        // Example: SecureRandom.getInstanceStrong().nextBytes(salt);
+        return new byte[16];
     }
 
-    public static String encrypt(String plaintext, SecretKey secretKey) {
+    public static String encrypt(String plaintext, String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        SecretKey secretKey = generateAESKey(password);
         try {
             Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
@@ -32,7 +43,8 @@ public class AES {
         return null;
     }
 
-    public static String decrypt(String encryptedText, SecretKey secretKey) {
+    public static String decrypt(String encryptedText, String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        SecretKey secretKey = generateAESKey(password);
         try {
             Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, secretKey);

@@ -1,26 +1,19 @@
-import javax.crypto.SecretKey;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-
 public class Main {
     public static void main(String[] args) {
 
         try {
-            // Generate a random AES key
-            SecretKey secretKey = AES.generateAESKey();
-            System.out.println("KEY: " + Base64.getEncoder().encodeToString(secretKey.getEncoded()));
-
-            String plaintext = "Hello, World!";
+            String password = "@Mhmd@mrayje.com12345@";
+            String plaintext = "TEST";
             System.out.println("Original Text: " + plaintext);
 
             // Encrypt the plaintext
-            String encryptedText = AES.encrypt(plaintext, secretKey);
+            String encryptedText = AES.encrypt(plaintext, password);
             System.out.println("Encrypted Text: " + encryptedText);
 
             // Decrypt the encrypted text
-            String decryptedText = AES.decrypt(encryptedText, secretKey);
+            String decryptedText = AES.decrypt(encryptedText, password);
             System.out.println("Decrypted Text: " + decryptedText);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
